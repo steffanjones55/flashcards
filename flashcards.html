@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Language Flashcards</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+    }
+    .card {
+      width: 300px;
+      height: 180px;
+      margin: 40px auto;
+      border: 2px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Language Flashcards</h1>
+
+<div id="home">
+  <h2>Select a unit</h2>
+<button onclick="startUnit('unitA_days')">Days of the Week</button>
+<button onclick="startUnit('unitB_months')">Months</button>
+<button onclick="startUnit('unitC_colours')">Colours</button>
+</div>
+
+<div id="flashcards" class="hidden">
+  <h2 id="unit-title"></h2>
+  <div class="card" onclick="flipCard()">
+    <span id="card-text"></span>
+  </div>
+  <button onclick="nextCard()">Next</button>
+  <button onclick="goHome()">Home</button>
+</div>
+
+<script>
+  const UNITS = {
+    unitA_days: [
+  { front: "dydd Sul", back: "Sunday" },
+  { front: "dydd Llun", back: "Monday" },
+  { front: "dydd Mawrth", back: "Tuesday" },
+  { front: "dydd Mercher", back: "Wednesday" },
+  { front: "dydd Iau", back: "Thursday" },
+  { front: "dydd Gwener", back: "Friday" },
+  { front: "dydd Sadwrn", back: "Saturday" }
+],
+
+  unitB_months: [
+  { front: "mis Ionawr", back: "January" },
+  { front: "mis Chwefror", back: "February" },
+  { front: "mis Mawrth", back: "March" },
+  { front: "mis Ebrill", back: "April" },
+  { front: "mis Mai", back: "May" },
+  { front: "mis Mehefin", back: "June" },
+  { front: "mis Gorffennaf", back: "July" },
+  { front: "mis Awst", back: "August" },
+  { front: "mis Medi", back: "September" },
+  { front: "mis Hydref", back: "October" },
+  { front: "mis Tachwedd", back: "November" },
+  { front: "mis Rhagfyr", back: "December" }
+],
+
+unitC_colours: [
+  { front: "brown", back: "brown" },
+  { front: "coch", back: "red" },
+  { front: "du", back: "black" },
+  { front: "glas", back: "blue" },
+  { front: "gwyn", back: "white" },
+  { front: "gwyrdd", back: "green" },
+  { front: "llwyd", back: "grey" },
+  { front: "melyn", back: "yellow" },
+  { front: "oren", back: "orange" },
+  { front: "pinc", back: "pink" },
+  { front: "porffor / piws", back: "purple" }
+],
+  };
+
+  let words = [];
+  let index = 0;
+  let showingFront = true;
+
+  function startUnit(unit) {
+    words = [...UNITS[unit]].sort(() => Math.random() - 0.5).slice(0, 30);
+    index = 0;
+    showingFront = true;
+
+    document.getElementById("home").classList.add("hidden");
+    document.getElementById("flashcards").classList.remove("hidden");
+    document.getElementById("unit-title").innerText = unit.toUpperCase();
+
+    showCard();
+  }
+
+  function showCard() {
+    document.getElementById("card-text").innerText =
+      showingFront ? words[index].front : words[index].back;
+  }
+
+  function flipCard() {
+    showingFront = !showingFront;
+    showCard();
+  }
+
+  function nextCard() {
+    index = (index + 1) % words.length;
+    showingFront = true;
+    showCard();
+  }
+
+  function goHome() {
+    document.getElementById("flashcards").classList.add("hidden");
+    document.getElementById("home").classList.remove("hidden");
+  }
+</script>
+
+</body>
+</html>
