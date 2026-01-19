@@ -327,7 +327,7 @@ unit5: [
   let showingFront = true;
 
   function startUnit(unit) {
-    words = [...UNITS[unit]].sort(() => Math.random() - 0.5).slice(0, 30);
+    words = [...UNITS[unit]].sort(() => Math.random() - 0.5);
     index = 0;
     showingFront = true;
 
@@ -380,5 +380,6 @@ function showCard() {
 
 </body>
 </html>
+
 
 
