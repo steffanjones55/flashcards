@@ -54,6 +54,17 @@
   <button onclick="startUnit('unit9')">Unit9</button>
   <button onclick="startUnit('unit10')">Unit10</button>
 
+  <hr>
+
+<h2>Test mode</h2>
+<div id="test-units"></div>
+<button onclick="startTest()">Start Test</button>
+
+<hr>
+
+<button onclick="showGlossary()">Glossary</button>
+
+
 </div>
 
 <div id="flashcards" class="hidden">
@@ -61,8 +72,10 @@
   <div class="card" onclick="flipCard()">
     <span id="card-text"></span>
   </div>
-  <button onclick="nextCard()">Next</button>
-  <button onclick="goHome()">Home</button>
+<button onclick="nextCard()">Next</button>
+<button onclick="repeatWord()">Include this again</button>
+<button onclick="goHome()">Home</button>
+
 </div>
 
 <script>
@@ -321,10 +334,25 @@ unit5: [
 ],
   };
 
-  let direction = "welsh-to-english";
-  let words = [];
-  let index = 0;
-  let showingFront = true;
+let direction = "welsh-to-english";
+let words = [];
+let index = 0;
+let showingFront = true;
+let isTestMode = false;
+let testWords = [];
+
+// ✅ ADD HERE
+const testUnitsDiv = document.getElementById("test-units");
+
+Object.keys(UNITS).forEach(unit => {
+  testUnitsDiv.innerHTML += `
+    <label>
+      <input type="checkbox" value="${unit}">
+      ${unit}
+    </label><br>
+  `;
+});
+
 
   function startUnit(unit) {
     words = [...UNITS[unit]].sort(() => Math.random() - 0.5);
@@ -355,11 +383,18 @@ function showCard() {
     showCard();
   }
 
-  function nextCard() {
-    index = (index + 1) % words.length;
-    showingFront = true;
-    showCard();
+function nextCard() {
+  index++;
+
+  if (index >= words.length) {
+    showConfetti();
+    return;
   }
+
+  showingFront = true;
+  showCard();
+}
+
 
   function goHome() {
     document.getElementById("flashcards").classList.add("hidden");
@@ -374,12 +409,70 @@ function showCard() {
     direction = "welsh-to-english";
     document.getElementById("directionBtn").innerText = "Welsh → English";
   }
+  }
+Object.keys(UNITS).forEach(unit => {
+  testUnitsDiv.innerHTML += `
+    <label>
+      <input type="checkbox" value="${unit}">
+      ${unit}
+    </label><br>
+  `;
+});
+
+    function startTest() {
+  const selected = [...document.querySelectorAll("#test-units input:checked")]
+    .map(cb => cb.value);
+
+  if (selected.length === 0) {
+    alert("Select at least one unit");
+    return;
+  }
+
+  isTestMode = true;
+
+  let pool = [];
+  selected.forEach(unit => {
+    pool = pool.concat(UNITS[unit]);
+  });
+
+  words = pool.sort(() => Math.random() - 0.5).slice(0, 30);
+  index = 0;
+  showingFront = true;
+
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("flashcards").classList.remove("hidden");
+  document.getElementById("unit-title").innerText = "TEST";
+
+  showCard();
+}
+function showConfetti() {
+  document.body.innerHTML = `
+    <h1>🎉 Test complete! 🎉</h1>
+    <p>Pob lwc – gwaith bendigedig!</p>
+    <button onclick="location.reload()">Back to home</button>
+  `;
+}
+function repeatWord() {
+  words.push(words[index]);
+}
+function showGlossary() {
+  let html = "<h2>Glossary</h2><ul>";
+
+  Object.values(UNITS).flat().forEach(card => {
+    html += `<li><strong>${card.front}</strong> – ${card.back}</li>`;
+  });
+
+  html += "</ul><button onclick='location.reload()'>Back</button>";
+  document.body.innerHTML = html;
 }
 
+
+  
 </script>
 
 </body>
 </html>
+
 
 
 
