@@ -340,8 +340,9 @@ let index = 0;
 let showingFront = true;
 let isTestMode = false;
 let testWords = [];
+let repeatQueue = [];
 
-// ✅ ADD HERE
+
 const testUnitsDiv = document.getElementById("test-units");
 
 Object.keys(UNITS).forEach(unit => {
@@ -386,10 +387,24 @@ function showCard() {
 function nextCard() {
   index++;
 
-  if (index >= words.length) {
-    showConfetti();
+if (index >= words.length) {
+  if (isTestMode && repeatQueue.length > 0) {
+    words = repeatQueue;
+    repeatQueue = [];
+    index = 0;
+    showingFront = true;
+    showCard();
     return;
   }
+
+  if (isTestMode) {
+    showConfetti();
+  } else {
+    goHome();
+  }
+  return;
+}
+
 
   showingFront = true;
   showCard();
@@ -453,8 +468,9 @@ function showConfetti() {
   `;
 }
 function repeatWord() {
-  words.push(words[index]);
+  repeatQueue.push(words[index]);
 }
+
 function showGlossary() {
   let html = "<h2>Glossary</h2><ul>";
 
@@ -472,6 +488,7 @@ function showGlossary() {
 
 </body>
 </html>
+
 
 
 
