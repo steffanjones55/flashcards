@@ -416,7 +416,7 @@ if (index >= words.length) {
     document.getElementById("home").classList.remove("hidden");
   }
 
-  function toggleDirection() {
+function toggleDirection() {
   if (direction === "welsh-to-english") {
     direction = "english-to-welsh";
     document.getElementById("directionBtn").innerText = "English → Welsh";
@@ -424,6 +424,8 @@ if (index >= words.length) {
     direction = "welsh-to-english";
     document.getElementById("directionBtn").innerText = "Welsh → English";
   }
+}
+
   }
 Object.keys(UNITS).forEach(unit => {
   testUnitsDiv.innerHTML += `
@@ -463,7 +465,7 @@ Object.keys(UNITS).forEach(unit => {
 function showConfetti() {
   document.body.innerHTML = `
     <h1>🎉 Test complete! 🎉</h1>
-    <p>Pob lwc – gwaith bendigedig!</p>
+    <p>Da iawn – gwaith bendigedig!</p>
     <button onclick="location.reload()">Back to home</button>
   `;
 }
@@ -481,6 +483,20 @@ function showGlossary() {
   html += "</ul><button onclick='location.reload()'>Back</button>";
   document.body.innerHTML = html;
 }
+function buildTestUnitOptions() {
+  const testUnitsDiv = document.getElementById("test-units");
+  testUnitsDiv.innerHTML = ""; // ✅ clear first
+
+  Object.keys(UNITS).forEach(unit => {
+    testUnitsDiv.innerHTML += `
+      <label>
+        <input type="checkbox" value="${unit}">
+        ${unit}
+      </label><br>
+    `;
+  });
+}
+buildTestUnitOptions();
 
 
   
@@ -488,6 +504,7 @@ function showGlossary() {
 
 </body>
 </html>
+
 
 
 
