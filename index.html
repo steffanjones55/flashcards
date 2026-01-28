@@ -426,14 +426,7 @@ function toggleDirection() {
   }
 }
 
-  }
-Object.keys(UNITS).forEach(unit => {
-  testUnitsDiv.innerHTML += `
-    <label>
-      <input type="checkbox" value="${unit}">
-      ${unit}
-    </label><br>
-  `;
+
 });
 
     function startTest() {
@@ -485,7 +478,7 @@ function showGlossary() {
 }
 function buildTestUnitOptions() {
   const testUnitsDiv = document.getElementById("test-units");
-  testUnitsDiv.innerHTML = ""; // ✅ clear first
+  testUnitsDiv.innerHTML = "";
 
   Object.keys(UNITS).forEach(unit => {
     testUnitsDiv.innerHTML += `
@@ -496,6 +489,7 @@ function buildTestUnitOptions() {
     `;
   });
 }
+
 buildTestUnitOptions();
 
 
@@ -504,6 +498,7 @@ buildTestUnitOptions();
 
 </body>
 </html>
+
 
 
 
