@@ -69,6 +69,7 @@
 
 <div id="flashcards" class="hidden">
   <h2 id="unit-title"></h2>
+  <p id="progress-text"></p>
   <div class="card" onclick="flipCard()">
     <span id="card-text"></span>
   </div>
@@ -354,67 +355,87 @@ Object.keys(UNITS).forEach(unit => {
   `;
 });
 
+function startUnit(unit) {
+  // 1. Prepare the words
+  words = [...UNITS[unit]].sort(() => Math.random() - 0.5);
+  index = 0;
+  showingFront = true;
+  
+  // 2. Reset the system for a fresh start
+  isTestMode = false; 
+  repeatQueue = [];   
 
-  function startUnit(unit) {
-    words = [...UNITS[unit]].sort(() => Math.random() - 0.5);
-    index = 0;
-    showingFront = true;
+  // 3. Update the UI
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("flashcards").classList.remove("hidden");
+  document.getElementById("unit-title").innerText = unit.toUpperCase();
 
-    document.getElementById("home").classList.add("hidden");
-    document.getElementById("flashcards").classList.remove("hidden");
-    document.getElementById("unit-title").innerText = unit.toUpperCase();
-
-    showCard();
-  }
-
-function showCard() {
-  const card = words[index];
-
-  if (direction === "welsh-to-english") {
-    document.getElementById("card-text").innerText =
-      showingFront ? card.front : card.back;
-  } else {
-    document.getElementById("card-text").innerText =
-      showingFront ? card.back : card.front;
-  }
-  }
-
-  function flipCard() {
-    showingFront = !showingFront;
-    showCard();
-  }
+  showCard();
+  document.getElementById("progress-text").innerText = (index + 1) + " / " + words.length;
+}
 
 function nextCard() {
   index++;
 
-if (index >= words.length) {
-  if (isTestMode && repeatQueue.length > 0) {
-    words = repeatQueue;
-    repeatQueue = [];
-    index = 0;
-    showingFront = true;
-    showCard();
+  // Check if we reached the end of the current pile
+  if (index >= words.length) {
+    
+    // If we have words to repeat, start a 'mini-round' with them
+    if (repeatQueue.length > 0) {
+      words = [...repeatQueue].sort(() => Math.random() - 0.5); 
+      repeatQueue = []; // Clear it so we don't loop forever
+      index = 0;
+      showingFront = true;
+      showCard();
+      alert("Let's try those tricky ones again!");
+      return;
+    }
+
+    // Truly finished? Go home or show test results
+    if (isTestMode) {
+      showConfetti();
+    } else {
+      goHome();
+    }
     return;
   }
-
-  if (isTestMode) {
-    showConfetti();
-  } else {
-    goHome();
-  }
-  return;
-}
-
 
   showingFront = true;
   showCard();
 }
 
-
-  function goHome() {
-    document.getElementById("flashcards").classList.add("hidden");
-    document.getElementById("home").classList.remove("hidden");
+function repeatWord() {
+  const currentWord = words[index];
+  // Add to queue only if it's not already in there
+  if (!repeatQueue.includes(currentWord)) {
+    repeatQueue.push(currentWord);
   }
+}
+
+function showCard() {
+  const card = words[index];
+  const cardText = document.getElementById("card-text");
+  
+  // Set the text based on direction and flip state
+  if (direction === "welsh-to-english") {
+    cardText.innerText = showingFront ? card.front : card.back;
+  } else {
+    cardText.innerText = showingFront ? card.back : card.front;
+  }
+
+  // Update the progress counter
+  document.getElementById("progress-text").innerText = (index + 1) + " / " + words.length;
+}
+
+  function flipCard() {
+  showingFront = !showingFront;
+  showCard();
+}
+
+function goHome() {
+  document.getElementById("flashcards").classList.add("hidden");
+  document.getElementById("home").classList.remove("hidden");
+}
 
 function toggleDirection() {
   if (direction === "welsh-to-english") {
@@ -458,9 +479,6 @@ function showConfetti() {
     <button onclick="location.reload()">Back to home</button>
   `;
 }
-function repeatWord() {
-  repeatQueue.push(words[index]);
-}
 
 function showGlossary() {
   let html = "<h2>Glossary</h2><ul>";
@@ -494,6 +512,7 @@ buildTestUnitOptions();
 
 </body>
 </html>
+
 
 
 
