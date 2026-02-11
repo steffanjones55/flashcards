@@ -611,7 +611,6 @@ function startUnit(unit) {
   document.getElementById("review-now-btn").classList.add("hidden"); // Hide button for new units
   showCard();
 }
-}
 
 function nextCard() {
   index++;
@@ -650,6 +649,7 @@ function repeatWord() {
     repeatQueue.push(currentWord);
     // Show the button as soon as there is at least 1 word saved
     document.getElementById("review-now-btn").classList.remove("hidden");
+  }
 }
   function reviewSavedNow() {
   if (repeatQueue.length === 0) return;
@@ -767,6 +767,7 @@ buildTestUnitOptions();
 
 </body>
 </html>
+
 
 
 
