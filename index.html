@@ -73,18 +73,18 @@
 
 
 </div>
-
-<div id="flashcards" class="hidden">
+ <div id="flashcards" class="hidden">
   <h2 id="unit-title"></h2>
   <p id="progress-text"></p>
   <div class="card" onclick="flipCard()">
     <span id="card-text"></span>
   </div>
-<button onclick="nextCard()">Next</button>
-<button onclick="repeatWord()">Include this again</button>
-<button onclick="goHome()">Home</button>
+  <button onclick="nextCard()">Next</button>
+  <button onclick="repeatWord()">Include this again</button>
+  <button id="review-now-btn" onclick="reviewSavedNow()" class="hidden" style="background-color: #fff3e0; border: 2px solid #ffb74d;">Review Saved Now</button>
+  <button onclick="goHome()">Home</button>
 
-</div>
+ </div>
 
 <script>
   const UNITS = {
@@ -607,6 +607,10 @@ function startUnit(unit) {
 
   showCard();
   document.getElementById("progress-text").innerText = (index + 1) + " / " + words.length;
+   // ... your existing code ...
+  document.getElementById("review-now-btn").classList.add("hidden"); // Hide button for new units
+  showCard();
+}
 }
 
 function nextCard() {
@@ -644,7 +648,23 @@ function repeatWord() {
   // Add to queue only if it's not already in there
   if (!repeatQueue.includes(currentWord)) {
     repeatQueue.push(currentWord);
-  }
+    // Show the button as soon as there is at least 1 word saved
+    document.getElementById("review-now-btn").classList.remove("hidden");
+}
+  function reviewSavedNow() {
+  if (repeatQueue.length === 0) return;
+
+  // Set the words to just the ones she saved
+  words = [...repeatQueue].sort(() => Math.random() - 0.5);
+  repeatQueue = []; // Clear the queue for the new mini-round
+  index = 0;
+  showingFront = true;
+  
+  // Hide the review button until she saves new words in this round
+  document.getElementById("review-now-btn").classList.add("hidden");
+  document.getElementById("unit-title").innerText = "Reviewing Tricky Words";
+  
+  showCard();
 }
 
 function showCard() {
@@ -747,6 +767,7 @@ buildTestUnitOptions();
 
 </body>
 </html>
+
 
 
 
