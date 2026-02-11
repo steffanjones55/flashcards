@@ -7,7 +7,7 @@
   <style>
     /* Midnight Base */
     body {
-      background-color: #0f172a; /* Deep Midnight Blue */
+      background-color: #0f172a; 
       background-image: radial-gradient(#1e293b 1px, transparent 1px);
       background-size: 30px 30px;
       color: #f8fafc;
@@ -21,23 +21,21 @@
       font-family: 'Georgia', serif;
       font-style: italic;
       font-size: 3rem;
-      color: #f472b6; /* Soft Pink */
+      color: #f472b6; 
       text-shadow: 2px 2px 10px rgba(244, 114, 182, 0.4);
       margin-bottom: 25px;
     }
 
-    /* Main Container */
     #home, #flashcards {
       max-width: 800px;
       margin: 0 auto;
-      background: #1e293b; /* Dark Navy */
+      background: #1e293b; 
       padding: 40px;
       border-radius: 30px;
       border: 2px solid #334155;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
 
-    /* Grid for Buttons */
     .unit-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -45,7 +43,6 @@
       margin-top: 20px;
     }
 
-    /* The "Chic" Flashcard */
     .card {
       width: 90%;
       max-width: 400px;
@@ -65,15 +62,14 @@
       transition: all 0.2s ease;
       padding: 25px;
       line-height: 1.3;
-      border: none;
     }
 
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 0px #ec4899, 0 25px 40px rgba(0,0,0,0.4);
+    /* Change card style when in Review mode */
+    .card.review-mode {
+      box-shadow: 0 10px 0px #38bdf8, 0 20px 30px rgba(0,0,0,0.3);
+      border: 2px solid #38bdf8;
     }
 
-    /* Buttons */
     button {
       background-color: #334155;
       color: #fdf2f8;
@@ -84,17 +80,14 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
     button:hover {
       background-color: #f472b6;
       color: white;
-      border-color: #f472b6;
       transform: scale(1.05);
     }
 
-    /* Special Buttons */
     #directionBtn {
       background: linear-gradient(135deg, #db2777, #f472b6);
       color: white;
@@ -114,17 +107,11 @@
       color: #f472b6 !important;
     }
 
-    .connector-btn:hover {
-      background: #f472b6 !important;
-      color: white !important;
-    }
-
     #progress-text {
       font-size: 0.9rem;
       text-transform: uppercase;
       letter-spacing: 2px;
       color: #94a3b8;
-      margin-bottom: 10px;
     }
 
     #test-units {
@@ -141,23 +128,10 @@
       border-radius: 10px;
       cursor: pointer;
       font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: background 0.2s;
-    }
-
-    #test-units label:hover {
-      background: #475569;
     }
 
     .hidden { display: none; }
     hr { border: 0; border-top: 1px solid #334155; margin: 30px 0; }
-    
-    /* Custom Scrollbar for Glossary */
-    ul::-webkit-scrollbar { width: 8px; }
-    ul::-webkit-scrollbar-track { background: transparent; }
-    ul::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
   </style>
 </head>
 <body>
@@ -166,7 +140,6 @@
 
   <div id="home">
     <button onclick="toggleDirection()" id="directionBtn">Welsh → English</button>
-
     <div class="unit-grid">
       <button onclick="startUnit('unitA_days')">Days</button>
       <button onclick="startUnit('unitB_months')">Months</button>
@@ -183,12 +156,9 @@
       <button onclick="startUnit('unit10')">Unit 10</button>
       <button onclick="startUnit('connectors_1_5')" class="connector-btn">✨ The Connectors ✨</button>
     </div>
-
     <hr>
-    <h3 style="color: #f472b6;">Test Mode</h3>
     <div id="test-units"></div>
     <button onclick="startTest()" style="width: 100%; background: #ec4899; color: white;">Start Quiz</button>
-
     <hr>
     <button onclick="showGlossary()" style="background: transparent; border: none; color: #94a3b8; text-decoration: underline;">View All Words</button>
   </div>
@@ -196,317 +166,85 @@
   <div id="flashcards" class="hidden">
     <p id="progress-text"></p>
     <h2 id="unit-title" style="margin-top:0; color: #f472b6; font-style: italic;"></h2>
-    <div class="card" onclick="flipCard()">
+    <div class="card" id="flashcard-element" onclick="flipCard()">
       <span id="card-text"></span>
     </div>
     <div style="margin-top: 20px;">
       <button onclick="nextCard()" style="background: #db2777; color: white; padding: 15px 30px;">Next Card</button>
-      <button onclick="repeatWord()" style="background: #334155;">Save for Later</button>
-      <button id="review-now-btn" class="hidden" onclick="reviewSavedNow()" style="background-color: #f472b6; color: white;">Review Saved</button>
+      <button id="save-btn" onclick="repeatWord()" style="background: #334155;">Save for Later</button>
+      <button id="review-now-btn" class="hidden" onclick="reviewSavedNow()" style="background-color: #0ea5e9; color: white;">Review Saved</button>
       <br><br>
       <button onclick="goHome()" style="background: transparent; border: none; color: #94a3b8;">Back to Home</button>
     </div>
   </div>
 
   <script>
+    // DATA OBJECT (Shortened for display, but keep all your units here)
     const UNITS = {
-      unitA_days: [
-        { front: "dydd Sul", back: "Sunday" }, { front: "dydd Llun", back: "Monday" },
-        { front: "dydd Mawrth", back: "Tuesday" }, { front: "dydd Mercher", back: "Wednesday" },
-        { front: "dydd Iau", back: "Thursday" }, { front: "dydd Gwener", back: "Friday" },
-        { front: "dydd Sadwrn", back: "Saturday" }
-      ],
-      unitB_months: [
-        { front: "mis Ionawr", back: "January" }, { front: "mis Chwefror", back: "February" },
-        { front: "mis Mawrth", back: "March" }, { front: "mis Ebrill", back: "April" },
-        { front: "mis Mai", back: "May" }, { front: "mis Mehefin", back: "June" },
-        { front: "mis Gorffennaf", back: "July" }, { front: "mis Awst", back: "August" },
-        { front: "mis Medi", back: "September" }, { front: "mis Hydref", back: "October" },
-        { front: "mis Tachwedd", back: "November" }, { front: "mis Rhagfyr", back: "December" }
-      ],
-      unitC_colours: [
-        { front: "brown", back: "brown" }, { front: "coch", back: "red" },
-        { front: "du", back: "black" }, { front: "glas", back: "blue" },
-        { front: "gwyn", back: "white" }, { front: "gwyrdd", back: "green" },
-        { front: "llwyd", back: "grey" }, { front: "melyn", back: "yellow" },
-        { front: "oren", back: "orange" }, { front: "pinc", back: "pink" },
-        { front: "porffor / piws", back: "purple" }
-      ],
-      unit1: [
-        { front: "nos", back: "night" }, { front: "noswaith", back: "evening" },
-        { front: "paned", back: "cuppa" }, { front: "bore(au)", back: "morning(s)" },
-        { front: "car (ceir)", back: "car(s)" }, { front: "croeso", back: "welcome" },
-        { front: "dosbarth(iadau)", back: "class(es)" }, { front: "byw", back: "to live" },
-        { front: "darllen", back: "to read" }, { front: "dysgu", back: "to learn; to teach" },
-        { front: "da", back: "good" }, { front: "ofnadwy", back: "terrible" },
-        { front: "a", back: "and" }, { front: "chi", back: "you" },
-        { front: "diolch", back: "thanks" }, { front: "dyna pam", back: "that’s why" },
-        { front: "efo", back: "with" }, { front: "eto", back: "again" },
-        { front: "fi", back: "me" }, { front: "heddiw", back: "today" },
-        { front: "hwyl!", back: "bye!" }, { front: "i", back: "to; for" },
-        { front: "problem(au)", back: "problem(s)" }, { front: "rhaglen(ni)", back: "programme(s)" },
-        { front: "uned(au)", back: "unit(s)" }, { front: "enw(au)", back: "name(s)" },
-        { front: "heddlu", back: "police" }, { front: "p’nawn(iau)", back: "afternoon(s)" },
-        { front: "rhif(au)", back: "number(s)" }, { front: "gwylio", back: "to watch" },
-        { front: "gyrru", back: "to drive" }, { front: "stopio", back: "to stop" },
-        { front: "pinc", back: "pink" }, { front: "wedi blino", back: "tired" },
-        { front: "iawn", back: "ok; very" }, { front: "lle?", back: "where?" },
-        { front: "ond", back: "but" }, { front: "pawb", back: "everybody" },
-        { front: "pwy?", back: "who?" }, { front: "rŵan", back: "now" },
-        { front: "sut?", back: "how?" }, { front: "ti", back: "you" },
-        { front: "yma", back: "here" }, { front: "yn", back: "in" }
-      ],
-      unit2: [
-        { front: "cacen(nau)", back: "cake(s)" }, { front: "pêl (peli)", back: "ball(s)" },
-        { front: "bwyd", back: "food" }, { front: "caws", back: "cheese" },
-        { front: "cerdyn (cardiau)", back: "card(s)" }, { front: "cig(oedd)", back: "meat(s)" },
-        { front: "coffi(s)", back: "coffee(s)" }, { front: "criced", back: "cricket" },
-        { front: "cyrri(s)", back: "curry (-ies)" }, { front: "dillad", back: "clothes" },
-        { front: "dydd(iau)", back: "day(s)" }, { front: "golff", back: "golf" },
-        { front: "gwin", back: "wine" }, { front: "hoci", back: "hockey" },
-        { front: "bod", back: "to be" }, { front: "bwyta", back: "to eat" },
-        { front: "canu", back: "to sing" }, { front: "chwarae", back: "to play" },
-        { front: "dawnsio", back: "to dance" }, { front: "gweithio", back: "to work" },
-        { front: "gweld", back: "to see" }, { front: "gwneud", back: "to do; to make" },
-        { front: "bendigedig", back: "fantastic" }, { front: "coch", back: "red" },
-        { front: "gwyn", back: "white" }, { front: "ar", back: "on" },
-        { front: "be?/beth?", back: "what?" }, { front: "chwaith", back: "either" },
-        { front: "dim", back: "not; nothing; zero" }, { front: "hefyd", back: "also" },
-        { front: "heno", back: "tonight" }, { front: "wythnos(au)", back: "week(s)" },
-        { front: "llefrith / llaeth", back: "milk" }, { front: "papur(au)", back: "paper(s)" },
-        { front: "papur newydd", back: "newspaper" }, { front: "pêl-droed", back: "football" },
-        { front: "radio", back: "radio" }, { front: "siocled(i)", back: "chocolate(s)" },
-        { front: "siwgr", back: "sugar" }, { front: "teledu", back: "television" },
-        { front: "tennis", back: "tennis" }, { front: "tiwtor(iaid)", back: "tutor(s)" },
-        { front: "tost", back: "toast" }, { front: "hoffi", back: "to like" },
-        { front: "licio", back: "to like" }, { front: "mynd", back: "to go" },
-        { front: "prynu", back: "to buy" }, { front: "sgio", back: "to ski" },
-        { front: "siopa", back: "to shop" }, { front: "smwddio", back: "to iron" },
-        { front: "yfed", back: "to drink" }, { front: "neis", back: "nice" },
-        { front: "newydd", back: "new" }, { front: "siŵr", back: "sure" },
-        { front: "mynd am dro", back: "to go for a walk" }, { front: "pryd?", back: "when?" },
-        { front: "wrth gwrs", back: "of course" }, { front: "ych a fi", back: "yuck" },
-        { front: "yfory", back: "tomorrow" }
-      ],
-      unit3: [
-        { front: "diod(ydd)", back: "drink(s)" }, { front: "punt (punnoedd)", back: "pound(s) (money)" },
-        { front: "iâ", back: "ice" }, { front: "swydd(i)", back: "job(s)" },
-        { front: "potel(i)", back: "bottle(s)" }, { front: "blodyn (blodau)", back: "flower(s)" },
-        { front: "hufen iâ", back: "ice cream" }, { front: "caffi(s)", back: "café(s)" },
-        { front: "pupur", back: "pepper" }, { front: "dŵr", back: "water" },
-        { front: "pysgodyn (pysgod)", back: "fish(es)" }, { front: "finegr", back: "vinegar" },
-        { front: "rhywbeth", back: "something" }, { front: "ffôn (ffonau)", back: "phone(s)" },
-        { front: "sglodion", back: "chips" }, { front: "gwaith", back: "work" },
-        { front: "te", back: "tea" }, { front: "halen", back: "salt" },
-        { front: "tŷ (tai)", back: "house(s)" }, { front: "cael", back: "to have" },
-        { front: "isio / eisiau", back: "to want" }, { front: "clywed", back: "to hear" },
-        { front: "nofio", back: "to swim" }, { front: "dallt / deall", back: "to understand" },
-        { front: "arall", back: "other; else" }, { front: "os gwelwch chi’n dda", back: "please" },
-        { front: "dyma", back: "here is; this is" }, { front: "rhywbeth arall", back: "something else" }
-      ],
-      unit4: [
-        { front: "Cymru", back: "Wales" }, { front: "dynes", back: "woman" },
-        { front: "gêm (gemau)", back: "game(s); match(es)" }, { front: "gwlad (gwledydd)", back: "country; countries" },
-        { front: "gwyliau", back: "holiday(s)" }, { front: "Lloegr", back: "England" },
-        { front: "siop(au)", back: "shop(s)" }, { front: "tref(i)", back: "town(s)" },
-        { front: "tudalen(nau)", back: "page(s)" }, { front: "theatr(au)", back: "theatre(s)" },
-        { front: "beic(iau)", back: "bike(s)" }, { front: "byd", back: "world" },
-        { front: "dyn(ion)", back: "man; men" }, { front: "gwely(au)", back: "bed(s)" },
-        { front: "Nadolig", back: "Christmas" }, { front: "penwythnos(au)", back: "weekend(s)" },
-        { front: "sinema (sinemâu)", back: "cinema(s)" }, { front: "tîm (timau)", back: "team(s)" },
-        { front: "aros", back: "to stay; to wait" }, { front: "cerdded", back: "to walk" },
-        { front: "cofio", back: "to remember" }, { front: "deud", back: "to say; to tell" },
-        { front: "dŵad", back: "to come" }, { front: "hedfan", back: "to fly" },
-        { front: "helpu", back: "to help" }, { front: "nabod", back: "to know; to recognise" },
-        { front: "newid", back: "to change" }, { front: "aml", back: "often" },
-        { front: "bach", back: "small" }, { front: "gwreiddiol", back: "original" },
-        { front: "a deud y gwir", back: "to tell the truth" }, { front: "adre", back: "home" },
-        { front: "dros", back: "over" }, { front: "dyna", back: "there is" },
-        { front: "gan", back: "by; from (a person)" }, { front: "pan", back: "when" },
-        { front: "pob", back: "every" }, { front: "pob lwc", back: "good luck" },
-        { front: "’ta", back: "or; then" }, { front: "weithiau", back: "sometimes" },
-        { front: "wir", back: "indeed" }, { front: "yno", back: "there" }
-      ],
-      unit5: [
-        { front: "eglwys(i)", back: "church(es)" }, { front: "lolfa", back: "lounge" },
-        { front: "llyfrgell(oedd)", back: "library" }, { front: "swyddfa bost", back: "post office" },
-        { front: "tafarn(au)", back: "pub(s)" }, { front: "ysgol(ion)", back: "school(s)" },
-        { front: "diwetha", back: "last; previous" }, { front: "amser", back: "time" },
-        { front: "banc(iau)", back: "bank(s)" }, { front: "brecwast(au)", back: "breakfast(s)" },
-        { front: "cartref(i)", back: "home(s)" }, { front: "clwb (clybiau)", back: "club(s)" },
-        { front: "llestr(i)", back: "dish(es)" }, { front: "llyfr(au)", back: "book(s)" },
-        { front: "parc(iau)", back: "park(s)" }, { front: "rygbi", back: "rugby" },
-        { front: "stamp(iau)", back: "stamp(s)" }, { front: "swper", back: "supper" },
-        { front: "ysbyty (ysbytai)", back: "hospital(s)" }, { front: "coginio", back: "to cook" },
-        { front: "edrych ar", back: "to look at" }, { front: "garddio", back: "to garden" },
-        { front: "golchi", back: "to wash" }, { front: "ymlacio", back: "to relax" },
-        { front: "ymolchi", back: "to wash (oneself)" }, { front: "ddoe", back: "yesterday" },
-        { front: "gyda’r nos", back: "in the evening" }, { front: "neithiwr", back: "last night" },
-        { front: "wedyn", back: "afterwards" }
-      ],
-      unit6: [
-        { front: "awyren(nau)", back: "plane(s)" }, { front: "barn", back: "opinion" },
-        { front: "cân (caneuon)", back: "song(s)" }, { front: "gwraig (gwragedd)", back: "wife (wives)" },
-        { front: "neuadd(au)", back: "hall(s)" }, { front: "braf", back: "fine (weather)" },
-        { front: "cymylog", back: "cloudy" }, { front: "cynnes", back: "warm" },
-        { front: "diflas", back: "boring, miserable" }, { front: "gwlyb", back: "wet" },
-        { front: "gwyntog", back: "windy" }, { front: "hapus", back: "happy" },
-        { front: "hyfryd", back: "nice, lovely" }, { front: "mawr", back: "big" },
-        { front: "oer", back: "cold" }, { front: "poeth", back: "hot" },
-        { front: "prysur", back: "busy" }, { front: "pwysig", back: "important" },
-        { front: "stormus", back: "stormy" }, { front: "swnllyd", back: "noisy" },
-        { front: "sych", back: "dry" }, { front: "bws (bysiau)", back: "bus(es)" },
-        { front: "cant (cannoedd)", back: "hundred(s)" }, { front: "cyfarfod(ydd)", back: "meeting(s)" },
-        { front: "dechrau", back: "start, beginning" }, { front: "diwedd", back: "end" },
-        { front: "eira", back: "snow" }, { front: "glaw", back: "rain" },
-        { front: "gŵr (gwŷr)", back: "husband(s)" }, { front: "hanner", back: "half" },
-        { front: "llawr", back: "floor" }, { front: "lle(fydd)", back: "place(s)" },
-        { front: "teulu(oedd)", back: "family (families)" }, { front: "traeth(au)", back: "beach(es)" },
-        { front: "trên (trenau)", back: "train(s)" }, { front: "tywydd", back: "weather" },
-        { front: "bwrw eira", back: "to snow" }, { front: "bwrw glaw", back: "to rain" },
-        { front: "cau", back: "to close" }, { front: "cyfarfod", back: "to meet" },
-        { front: "dechrau", back: "to start" }, { front: "gadael", back: "to leave" },
-        { front: "gorfod", back: "to have to" }, { front: "gorffen", back: "to finish" },
-        { front: "gwybod", back: "to know (a fact)" }, { front: "medru", back: "to be able to" },
-        { front: "rhedeg", back: "to run" }, { front: "torri lawr", back: "to break down" },
-        { front: "pam?", back: "why?" }, { front: "rhywle", back: "somewhere" },
-        { front: "tua", back: "about, approximately" }
-      ],
-      unit7: [
-        { front: "awr (oriau)", back: "hour(s)" }, { front: "merch(ed)", back: "girl(s), daughter(s)" },
-        { front: "ceiniog(au)", back: "penny (pennies)" }, { front: "stryd(oedd)", back: "street(s)" },
-        { front: "ffasiwn", back: "fashion" }, { front: "postmon (postmyn)", back: "postman (postmen)" },
-        { front: "ffermwr (ffermwyr)", back: "farmer(s)" }, { front: "mab (meibion)", back: "son(s)" },
-        { front: "pres", back: "money; brass" }, { front: "oed", back: "age (of person)" },
-        { front: "rhew", back: "ice" }, { front: "pen-blwydd (pen-blwyddi)", back: "birthday(s)" },
-        { front: "tŷ bwyta (tai bwyta)", back: "restaurant(s)" }, { front: "staff", back: "staff" },
-        { front: "codi", back: "to get up, to lift" }, { front: "ffeindio", back: "to find" },
-        { front: "blin", back: "angry" }, { front: "hen", back: "old" },
-        { front: "clên", back: "nice, friendly" }, { front: "hwyr", back: "late" },
-        { front: "cynta", back: "first" }, { front: "nesa", back: "next" },
-        { front: "drud", back: "expensive" }, { front: "rhad", back: "cheap" },
-        { front: "enwog", back: "famous" }, { front: "trist", back: "sad" },
-        { front: "gwirion", back: "silly" }, { front: "faint?", back: "how much? how many?" },
-        { front: "o’r gloch", back: "o’clock" }
-      ],
-      unit8: [
-        { front: "athrawes(au)", back: "teacher(s) (f)" }, { front: "drama (dramâu)", back: "drama, play(s)" },
-        { front: "ffatri (ffatrïoedd)", back: "factory (factories)" }, { front: "fflat(iau)", back: "flat(s)" },
-        { front: "gorsaf(oedd)", back: "station(s)" }, { front: "hogan (genod)", back: "girl(s)" },
-        { front: "nyrs(ys)", back: "nurse(s)" }, { front: "pobol", back: "people" },
-        { front: "rheolwraig", back: "manager (f)" }, { front: "actor(ion)", back: "actor(s)" },
-        { front: "athro (athrawon)", back: "teacher(s) (m)" }, { front: "camera (camerâu)", back: "camera(s)" },
-        { front: "cogydd(ion)", back: "chef(s), cook(s)" }, { front: "coleg(au)", back: "college(s)" },
-        { front: "cyngerdd (cyngherddau)", back: "concert(s)" }, { front: "derbynnydd", back: "receptionist" },
-        { front: "gwesty (gwestai)", back: "hotel(s)" }, { front: "hogyn (hogiau)", back: "boy(s)" },
-        { front: "maes parcio", back: "car park" }, { front: "meddyg(on)", back: "doctor(s)" },
-        { front: "munud(au)", back: "minute(s)" }, { front: "pennaeth", back: "head (person)" },
-        { front: "plismon (plismyn)", back: "policeman (policemen)" }, { front: "rheolwr (rheolwyr)", back: "manager(s) (m)" },
-        { front: "rhywun", back: "someone" }, { front: "tacsi(s)", back: "taxi(s)" },
-        { front: "tocyn(nau)", back: "ticket(s)" }, { front: "adolygu", back: "to revise, to review" },
-        { front: "benthyg", back: "to borrow, to lend" }, { front: "cadw", back: "to keep, to reserve" },
-        { front: "ffonio", back: "to phone" }, { front: "gofyn", back: "to ask" },
-        { front: "siarad", back: "to talk" }, { front: "talu", back: "to pay" },
-        { front: "allan", back: "out" }, { front: "ar gael", back: "available" },
-        { front: "ar-lein", back: "online" }, { front: "mewn", back: "in a" },
-        { front: "yr un", back: "each" }
-      ],
-      unit9: [
-        { front: "cegin(au)", back: "kitchen(s)" }, { front: "cerddoriaeth", back: "music" },
-        { front: "garej(is)", back: "garage(s)" }, { front: "Lerpwl", back: "Liverpool" },
-        { front: "Saesneg", back: "English" }, { front: "bwrdd (byrddau)", back: "table(s); board(s)" },
-        { front: "cloc(iau)", back: "clock(s)" }, { front: "cwrw", back: "beer" },
-        { front: "drws (drysau)", back: "door(s)" }, { front: "ebost (ebyst)", back: "email(s)" },
-        { front: "gair (geiriau)", back: "word(s)" }, { front: "help", back: "help" },
-        { front: "llawer", back: "a lot" }, { front: "peint(iau)", back: "pint(s)" },
-        { front: "tipyn", back: "a little" }, { front: "agor", back: "to open" },
-        { front: "anfon", back: "to send" }, { front: "ateb", back: "to answer" },
-        { front: "bowlio", back: "to bowl" }, { front: "cadw’n heini", back: "to keep fit" },
-        { front: "cyrraedd", back: "to arrive" }, { front: "gwrando ar", back: "to listen to" },
-        { front: "llenwi", back: "to fill" }, { front: "mwynhau", back: "to enjoy" },
-        { front: "mynd â", back: "to take (something somewhere)" }, { front: "peintio", back: "to paint" },
-        { front: "seiclo", back: "to cycle" }, { front: "ar-lein", back: "online" },
-        { front: "bechod!", back: "what a shame!" }, { front: "echdoe", back: "the day before yesterday" },
-        { front: "felly", back: "therefore, so" }, { front: "go lew", back: "quite good" },
-        { front: "yna", back: "there; then" }
-      ],
-      unit10: [
-        { front: "coeden (coed)", back: "tree(s)" }, { front: "deilen (dail)", back: "leaf (leaves)" },
-        { front: "miliwn (miliynau)", back: "million(s)" }, { front: "capel(i)", back: "chapel(s)" },
-        { front: "capten", back: "captain" }, { front: "Dydd Calan", back: "New Year’s Day" },
-        { front: "Dydd Gŵyl Dewi", back: "St. David’s Day" }, { front: "gaeaf", back: "winter" },
-        { front: "gwanwyn", back: "spring" }, { front: "Sbaen", back: "Spain" },
-        { front: "siec(iau)", back: "cheque(s)" }, { front: "haf", back: "summer" },
-        { front: "hydref", back: "autumn" }, { front: "mis(oedd)", back: "month(s)" },
-        { front: "môr (moroedd)", back: "sea(s)" }, { front: "pwll (pyllau)", back: "pool(s)" },
-        { front: "tymor (tymhorau)", back: "season(s), term(s)" }, { front: "casglu", back: "to collect" },
-        { front: "ennill", back: "to win" }, { front: "gwario", back: "to spend (money)" },
-        { front: "cynnar", back: "early" }, { front: "syth", back: "straight" },
-        { front: "mwy", back: "more" }, { front: "am", back: "about" },
-        { front: "dal", back: "still" }, { front: "i ffwrdd", back: "away" },
-        { front: "i mewn", back: "in" }
-      ],
-      connectors_1_5: [
-        { front: "a / ac", back: "and" }, { front: "ond", back: "but" },
-        { front: "hefyd", back: "also" }, { front: "dyna pam", back: "that’s why" },
-        { front: "yn", back: "in" }, { front: "ar", back: "on" },
-        { front: "i", back: "to" }, { front: "adre", back: "home" },
-        { front: "dros", back: "over" }, { front: "eto", back: "again" },
-        { front: "’ta", back: "then" }, { front: "pan", back: "when" },
-        { front: "pob", back: "every" }, { front: "gyda’r nos", back: "in the evening" },
-        { front: "dyma", back: "here is" }, { front: "dyna", back: "there is" },
-        { front: "yma", back: "here" }, { front: "yno", back: "there" },
-        { front: "sut?", back: "how?" }, { front: "pwy?", back: "who?" },
-        { front: "lle?", back: "where?" }, { front: "be? / beth?", back: "what?" },
-        { front: "pryd?", back: "when?" }
-      ]
+      unitA_days: [{front:"dydd Sul",back:"Sunday"},{front:"dydd Llun",back:"Monday"},{front:"dydd Mawrth",back:"Tuesday"},{front:"dydd Mercher",back:"Wednesday"},{front:"dydd Iau",back:"Thursday"},{front:"dydd Gwener",back:"Friday"},{front:"dydd Sadwrn",back:"Saturday"}],
+      unitB_months: [{front:"mis Ionawr",back:"January"},{front:"mis Chwefror",back:"February"},{front:"mis Mawrth",back:"March"},{front:"mis Ebrill",back:"April"},{front:"mis Mai",back:"May"},{front:"mis Mehefin",back:"June"},{front:"mis Gorffennaf",back:"July"},{front:"mis Awst",back:"August"},{front:"mis Medi",back:"September"},{front:"mis Hydref",back:"October"},{front:"mis Tachwedd",back:"November"},{front:"mis Rhagfyr",back:"December"}],
+      unitC_colours: [{front:"brown",back:"brown"},{front:"coch",back:"red"},{front:"du",back:"black"},{front:"glas",back:"blue"},{front:"gwyn",back:"white"},{front:"gwyrdd",back:"green"},{front:"llwyd",back:"grey"},{front:"melyn",back:"yellow"},{front:"oren",back:"orange"},{front:"pinc",back:"pink"},{front:"porffor / piws",back:"purple"}],
+      unit1: [{front:"nos",back:"night"},{front:"noswaith",back:"evening"},{front:"paned",back:"cuppa"},{front:"bore(au)",back:"morning(s)"},{front:"car (ceir)",back:"car(s)"},{front:"croeso",back:"welcome"},{front:"dosbarth(iadau)",back:"class(es)"},{front:"byw",back:"to live"},{front:"darllen",back:"to read"},{front:"dysgu",back:"to learn; to teach"},{front:"da",back:"good"},{front:"ofnadwy",back:"terrible"},{front:"a",back:"and"},{front:"chi",back:"you"},{front:"diolch",back:"thanks"},{front:"dyna pam",back:"that’s why"},{front:"efo",back:"with"},{front:"eto",back:"again"},{front:"fi",back:"me"},{front:"heddiw",back:"today"},{front:"hwyl!",back:"bye!"},{front:"i",back:"to; for"},{front:"problem(au)",back:"problem(s)"},{front:"rhaglen(ni)",back:"programme(s)"},{front:"uned(au)",back:"unit(s)"},{front:"enw(au)",back:"name(s)"},{front:"heddlu",back:"police"},{front:"p’nawn(iau)",back:"afternoon(s)"},{front:"rhif(au)",back:"number(s)"},{front:"gwylio",back:"to watch"},{front:"gyrru",back:"to drive"},{front:"stopio",back:"to stop"},{front:"pinc",back:"pink"},{front:"wedi blino",back:"tired"},{front:"iawn",back:"ok; very"},{front:"lle?",back:"where?"},{front:"ond",back:"but"},{front:"pawb",back:"everybody"},{front:"pwy?",back:"who?"},{front:"rŵan",back:"now"},{front:"sut?",back:"how?"},{front:"ti",back:"you"},{front:"yma",back:"here"},{front:"yn",back:"in"}],
+      unit2: [{front:"cacen(nau)",back:"cake(s)"},{front:"pêl (peli)",back:"ball(s)"},{front:"bwyd",back:"food"},{front:"caws",back:"cheese"},{front:"cerdyn (cardiau)",back:"card(s)"},{front:"cig(oedd)",back:"meat(s)"},{front:"coffi(s)",back:"coffee(s)"},{front:"criced",back:"cricket"},{front:"cyrri(s)",back:"curry (-ies)"},{front:"dillad",back:"clothes"},{front:"dydd(iau)",back:"day(s)"},{front:"golff",back:"golf"},{front:"gwin",back:"wine"},{front:"hoci",back:"hockey"},{front:"bod",back:"to be"},{front:"bwyta",back:"to eat"},{front:"canu",back:"to sing"},{front:"chwarae",back:"to play"},{front:"dawnsio",back:"to dance"},{front:"gweithio",back:"to work"},{front:"gweld",back:"to see"},{front:"gwneud",back:"to do; to make"},{front:"bendigedig",back:"fantastic"},{front:"coch",back:"red"},{front:"gwyn",back:"white"},{front:"ar",back:"on"},{front:"be?/beth?",back:"what?"},{front:"chwaith",back:"either"},{front:"dim",back:"not; nothing; zero"},{front:"hefyd",back:"also"},{front:"heno",back:"tonight"},{front:"wythnos(au)",back:"week(s)"},{front:"llefrith / llaeth",back:"milk"},{front:"papur(au)",back:"paper(s)"},{front:"papur newydd",back:"newspaper"},{front:"pêl-droed",back:"football"},{front:"radio",back:"radio"},{front:"siocled(i)",back:"chocolate(s)"},{front:"siwgr",back:"sugar"},{front:"teledu",back:"television"},{front:"tennis",back:"tennis"},{front:"tiwtor(iaid)",back:"tutor(s)"},{front:"tost",back:"toast"},{front:"hoffi",back:"to like"},{front:"licio",back:"to like"},{front:"mynd",back:"to go"},{front:"prynu",back:"to buy"},{front:"sgio",back:"to ski"},{front:"siopa",back:"to shop"},{front:"smwddio",back:"to iron"},{front:"yfed",back:"to drink"},{front:"neis",back:"nice"},{front:"newydd",back:"new"},{front:"siŵr",back:"sure"},{front:"mynd am dro",back:"to go for a walk"},{front:"pryd?",back:"when?"},{front:"wrth gwrs",back:"of course"},{front:"ych a fi",back:"yuck"},{front:"yfory",back:"tomorrow"}],
+      unit3: [{front:"diod(ydd)",back:"drink(s)"},{front:"punt (punnoedd)",back:"pound(s) (money)"},{front:"iâ",back:"ice"},{front:"swydd(i)",back:"job(s)"},{front:"potel(i)",back:"bottle(s)"},{front:"blodyn (blodau)",back:"flower(s)"},{front:"hufen iâ",back:"ice cream"},{front:"caffi(s)",back:"café(s)"},{front:"pupur",back:"pepper"},{front:"dŵr",back:"water"},{front:"pysgodyn (pysgod)",back:"fish(es)"},{front:"finegr",back:"vinegar"},{front:"rhywbeth",back:"something"},{front:"ffôn (ffonau)",back:"phone(s)"},{front:"sglodion",back:"chips"},{front:"gwaith",back:"work"},{front:"te",back:"tea"},{front:"halen",back:"salt"},{front:"tŷ (tai)",back:"house(s)"},{front:"cael",back:"to have"},{front:"isio / eisiau",back:"to want"},{front:"clywed",back:"to hear"},{front:"nofio",back:"to swim"},{front:"dallt / deall",back:"to understand"},{front:"arall",back:"other; else"},{front:"os gwelwch chi’n dda",back:"please"},{front:"dyma",back:"here is; this is"},{front:"rhywbeth arall",back:"something else"}],
+      unit4: [{front:"Cymru",back:"Wales"},{front:"dynes",back:"woman"},{front:"gêm (gemau)",back:"game(s); match(es)"},{front:"gwlad (gwledydd)",back:"country; countries"},{front:"gwyliau",back:"holiday(s)"},{front:"Lloegr",back:"England"},{front:"siop(au)",back:"shop(s)"},{front:"tref(i)",back:"town(s)"},{front:"tudalen(nau)",back:"page(s)"},{front:"theatr(au)",back:"theatre(s)"},{front:"beic(iau)",back:"bike(s)"},{front:"byd",back:"world"},{front:"dyn(ion)",back:"man; men"},{front:"gwely(au)",back:"bed(s)"},{front:"Nadolig",back:"Christmas"},{front:"penwythnos(au)",back:"weekend(s)"},{front:"sinema (sinemâu)",back:"cinema(s)"},{front:"tîm (timau)",back:"team(s)"},{front:"aros",back:"to stay; to wait"},{front:"cerdded",back:"to walk"},{front:"cofio",back:"to remember"},{front:"deud",back:"to say; to tell"},{front:"dŵad",back:"to come"},{front:"hedfan",back:"to fly"},{front:"helpu",back:"to help"},{front:"nabod",back:"to know; to recognise"},{front:"newid",back:"to change"},{front:"aml",back:"often"},{front:"bach",back:"small"},{front:"gwreiddiol",back:"original"},{front:"a deud y gwir",back:"to tell the truth"},{front:"adre",back:"home"},{front:"dros",back:"over"},{front:"dyna",back:"there is"},{front:"gan",back:"by; from (a person)"},{front:"pan",back:"when"},{front:"pob",back:"every"},{front:"pob lwc",back:"good luck"},{front:"’ta",back:"or; then"},{front:"weithiau",back:"sometimes"},{front:"wir",back:"indeed"},{front:"yno",back:"there"}],
+      unit5: [{front:"eglwys(i)",back:"church(es)"},{front:"lolfa",back:"lounge"},{front:"llyfrgell(oedd)",back:"library"},{front:"swyddfa bost",back:"post office"},{front:"tafarn(au)",back:"pub(s)"},{front:"ysgol(ion)",back:"school(s)"},{front:"diwetha",back:"last; previous"},{front:"amser",back:"time"},{front:"banc(iau)",back:"bank(s)"},{front:"brecwast(au)",back:"breakfast(s)"},{front:"cartref(i)",back:"home(s)"},{front:"clwb (clybiau)",back:"club(s)"},{front:"llestr(i)",back:"dish(es)"},{front:"llyfr(au)",back:"book(s)"},{front:"parc(iau)",back:"park(s)"},{front:"rygbi",back:"rugby"},{front:"stamp(iau)",back:"stamp(s)"},{front:"swper",back:"supper"},{front:"ysbyty (ysbytai)",back:"hospital(s)"},{front:"coginio",back:"to cook"},{front:"edrych ar",back:"to look at"},{front:"garddio",back:"to garden"},{front:"golchi",back:"to wash"},{front:"ymlacio",back:"to relax"},{front:"ymolchi",back:"to wash (oneself)"},{front:"ddoe",back:"yesterday"},{front:"gyda’r nos",back:"in the evening"},{front:"neithiwr",back:"last night"},{front:"wedyn",back:"afterwards"}],
+      unit6: [{front:"awyren(nau)",back:"plane(s)"},{front:"barn",back:"opinion"},{front:"cân (caneuon)",back:"song(s)"},{front:"gwraig (gwragedd)",back:"wife (wives)"},{front:"neuadd(au)",back:"hall(s)"},{front:"braf",back:"fine (weather)"},{front:"cymylog",back:"cloudy"},{front:"cynnes",back:"warm"},{front:"diflas",back:"boring, miserable"},{front:"gwlyb",back:"wet"},{front:"gwyntog",back:"windy"},{front:"hapus",back:"happy"},{front:"hyfryd",back:"nice, lovely"},{front:"mawr",back:"big"},{front:"oer",back:"cold"},{front:"poeth",back:"hot"},{front:"prysur",back:"busy"},{front:"pwysig",back:"important"},{front:"stormus",back:"stormy"},{front:"swnllyd",back:"noisy"},{front:"sych",back:"dry"},{front:"bws (bysiau)",back:"bus(es)"},{front:"cant (cannoedd)",back:"hundred(s)"},{front:"cyfarfod(ydd)",back:"meeting(s)"},{front:"dechrau",back:"start, beginning"},{front:"diwedd",back:"end"},{front:"eira",back:"snow"},{front:"glaw",back:"rain"},{front:"gŵr (gwŷr)",back:"husband(s)"},{front:"hanner",back:"half"},{front:"llawr",back:"floor"},{front:"lle(fydd)",back:"place(s)"},{front:"teulu(oedd)",back:"family (families)"},{front:"traeth(au)",back:"beach(es)"},{front:"trên (trenau)",back:"train(s)"},{front:"tywydd",back:"weather"},{front:"bwrw eira",back:"to snow"},{front:"bwrw glaw",back:"to rain"},{front:"cau",back:"to close"},{front:"cyfarfod",back:"to meet"},{front:"dechrau",back:"to start"},{front:"gadael",back:"to leave"},{front:"gorfod",back:"to have to"},{front:"gorffen",back:"to finish"},{front:"gwybod",back:"to know (a fact)"},{front:"medru",back:"to be able to"},{front:"rhedeg",back:"to run"},{front:"torri lawr",back:"to break down"},{front:"pam?",back:"why?"},{front:"rhywle",back:"somewhere"},{front:"tua",back:"about, approximately"}],
+      unit7: [{front:"awr (oriau)",back:"hour(s)"},{front:"merch(ed)",back:"girl(s), daughter(s)"},{front:"ceiniog(au)",back:"penny (pennies)"},{front:"stryd(oedd)",back:"street(s)"},{front:"ffasiwn",back:"fashion"},{front:"postmon (postmyn)",back:"postman (postmen)"},{front:"ffermwr (ffermwyr)",back:"farmer(s)"},{front:"mab (meibion)",back:"son(s)"},{front:"pres",back:"money; brass"},{front:"oed",back:"age (of person)"},{front:"rhew",back:"ice"},{front:"pen-blwydd (pen-blwyddi)",back:"birthday(s)"},{front:"tŷ bwyta (tai bwyta)",back:"restaurant(s)"},{front:"staff",back:"staff"},{front:"codi",back:"to get up, to lift"},{front:"ffeindio",back:"to find"},{front:"blin",back:"angry"},{front:"hen",back:"old"},{front:"clên",back:"nice, friendly"},{front:"hwyr",back:"late"},{front:"cynta",back:"first"},{front:"nesa",back:"next"},{front:"drud",back:"expensive"},{front:"rhad",back:"cheap"},{front:"enwog",back:"famous"},{front:"trist",back:"sad"},{front:"gwirion",back:"silly"},{front:"faint?",back:"how much? how many?"},{front:"o’r gloch",back:"o’clock"}],
+      unit8: [{front:"athrawes(au)",back:"teacher(s) (f)"},{front:"drama (dramâu)",back:"drama, play(s)"},{front:"ffatri (ffatrïoedd)",back:"factory (factories)"},{front:"fflat(iau)",back:"flat(s)"},{front:"gorsaf(oedd)",back:"station(s)"},{front:"hogan (genod)",back:"girl(s)"},{front:"nyrs(ys)",back:"nurse(s)"},{front:"pobol",back:"people"},{front:"rheolwraig",back:"manager (f)"},{front:"actor(ion)",back:"actor(s)"},{front:"athro (athrawon)",back:"teacher(s) (m)"},{front:"camera (camerâu)",back:"camera(s)"},{front:"cogydd(ion)",back:"chef(s), cook(s)"},{front:"coleg(au)",back:"college(s)"},{front:"cyngerdd (cyngherddau)",back:"concert(s)"},{front:"derbynnydd",back:"receptionist"},{front:"gwesty (gwestai)",back:"hotel(s)"},{front:"hogyn (hogiau)",back:"boy(s)"},{front:"maes parcio",back:"car park"},{front:"meddyg(on)",back:"doctor(s)"},{front:"munud(au)",back:"minute(s)"},{front:"pennaeth",back:"head (person)"},{front:"plismon (plismyn)",back:"policeman (policemen)"},{front:"rheolwr (rheolwyr)",back:"manager(s) (m)"},{front:"rhywun",back:"someone"},{front:"tacsi(s)",back:"taxi(s)"},{front:"tocyn(nau)",back:"ticket(s)"},{front:"adolygu",back:"to revise, to review"},{front:"benthyg",back:"to borrow, to lend"},{front:"cadw",back:"to keep, to reserve"},{front:"ffonio",back:"to phone"},{front:"gofyn",back:"to ask"},{front:"siarad",back:"to talk"},{front:"talu",back:"to pay"},{front:"allan",back:"out"},{front:"ar gael",back:"available"},{front:"ar-lein",back:"online"},{front:"mewn",back:"in a"},{front:"yr un",back:"each"}],
+      unit9: [{front:"cegin(au)",back:"kitchen(s)"},{front:"cerddoriaeth",back:"music"},{front:"garej(is)",back:"garage(s)"},{front:"Lerpwl",back:"Liverpool"},{front:"Saesneg",back:"English"},{front:"bwrdd (byrddau)",back:"table(s); board(s)"},{front:"cloc(iau)",back:"clock(s)"},{front:"cwrw",back:"beer"},{front:"drws (drysau)",back:"door(s)"},{front:"ebost (ebyst)",back:"email(s)"},{front:"gair (geiriau)",back:"word(s)"},{front:"help",back:"help"},{front:"llawer",back:"a lot"},{front:"peint(iau)",back:"pint(s)"},{front:"tipyn",back:"a little"},{front:"agor",back:"to open"},{front:"anfon",back:"to send"},{front:"ateb",back:"to answer"},{front:"bowlio",back:"to bowl"},{front:"cadw’n heini",back:"to keep fit"},{front:"cyrraedd",back:"to arrive"},{front:"gwrando ar",back:"to listen to"},{front:"llenwi",back:"to fill"},{front:"mwynhau",back:"to enjoy"},{front:"mynd â",back:"to take (something somewhere)"},{front:"peintio",back:"to paint"},{front:"seiclo",back:"to cycle"},{front:"ar-lein",back:"online"},{front:"bechod!",back:"what a shame!"},{front:"echdoe",back:"the day before yesterday"},{front:"felly",back:"therefore, so"},{front:"go lew",back:"quite good"},{front:"yna",back:"there; then"}],
+      unit10: [{front:"coeden (coed)",back:"tree(s)"},{front:"deilen (dail)",back:"leaf (leaves)"},{front:"miliwn (miliynau)",back:"million(s)"},{front:"capel(i)",back:"chapel(s)"},{front:"capten",back:"captain"},{front:"Dydd Calan",back:"New Year’s Day"},{front:"Dydd Gŵyl Dewi",back:"St. David’s Day"},{front:"gaeaf",back:"winter"},{front:"gwanwyn",back:"spring"},{front:"Sbaen",back:"Spain"},{front:"siec(iau)",back:"cheque(s)"},{front:"haf",back:"summer"},{front:"hydref",back:"autumn"},{front:"mis(oedd)",back:"month(s)"},{front:"môr (moroedd)",back:"sea(s)"},{front:"pwll (pyllau)",back:"pool(s)"},{front:"tymor (tymhorau)",back:"season(s), term(s)"},{front:"casglu",back:"to collect"},{front:"ennill",back:"to win"},{front:"gwario",back:"to spend (money)"},{front:"cynnar",back:"early"},{front:"syth",back:"straight"},{front:"mwy",back:"more"},{front:"am",back:"about"},{front:"dal",back:"still"},{front:"i ffwrdd",back:"away"},{front:"i mewn",back:"in"}],
+      connectors_1_5: [{front:"a / ac",back:"and"},{front:"ond",back:"but"},{front:"hefyd",back:"also"},{front:"dyna pam",back:"that’s why"},{front:"yn",back:"in"},{front:"ar",back:"on"},{front:"i",back:"to"},{front:"adre",back:"home"},{front:"dros",back:"over"},{front:"eto",back:"again"},{front:"’ta",back:"then"},{front:"pan",back:"when"},{front:"pob",back:"every"},{front:"gyda’r nos",back:"in the evening"},{front:"dyma",back:"here is"},{front:"dyna",back:"there is"},{front:"yma",back:"here"},{front:"yno",back:"there"},{front:"sut?",back:"how?"},{front:"pwy?",back:"who?"},{front:"lle?",back:"where?"},{front:"be? / beth?",back:"what?"},{front:"pryd?",back:"when?"}]
     };
 
     let direction = "welsh-to-english";
-    let words = [];
-    let index = 0;
+    let words = []; 
+    let index = 0; 
     let showingFront = true;
-    let isTestMode = false;
-    let repeatQueue = [];
+    let trickyWords = []; 
+
+    // Backup system to handle Resuming
+    let backupWords = [];
+    let backupIndex = 0;
+    let mainUnitTitle = "";
+    let isReviewingTricky = false;
 
     function buildTestUnitOptions() {
       const div = document.getElementById("test-units");
       div.innerHTML = "";
       Object.keys(UNITS).forEach(unit => {
-        div.innerHTML += `
-          <label>
-            <input type="checkbox" value="${unit}">
-            ${unit.replace('unit', 'Unit ').replace('_', ' ')}
-          </label>`;
+        div.innerHTML += `<label><input type="checkbox" value="${unit}"> ${unit.replace('unit', 'Unit ').replace('_', ' ')}</label>`;
       });
     }
 
-    function startUnit(unit) {
-      words = [...UNITS[unit]].sort(() => Math.random() - 0.5);
+    function startUnit(unitKey) {
+      // NEW UNIT = Wipe tricky words for that unit
+      trickyWords = [];
+      document.getElementById("review-now-btn").classList.add("hidden");
+      
+      mainUnitTitle = unitKey.toUpperCase().replace('_', ' ');
+      words = [...UNITS[unitKey]].sort(() => Math.random() - 0.5);
       index = 0;
       showingFront = true;
-      isTestMode = false;
-      repeatQueue = [];
+      isReviewingTricky = false;
+      
       document.getElementById("home").classList.add("hidden");
       document.getElementById("flashcards").classList.remove("hidden");
-      document.getElementById("unit-title").innerText = unit.toUpperCase().replace('_', ' ');
-      document.getElementById("review-now-btn").classList.add("hidden");
+      document.getElementById("flashcard-element").classList.remove("review-mode");
+      document.getElementById("unit-title").innerText = mainUnitTitle;
       showCard();
     }
 
     function nextCard() {
       index++;
       if (index >= words.length) {
-        if (repeatQueue.length > 0) {
-          words = [...repeatQueue].sort(() => Math.random() - 0.5);
-          repeatQueue = [];
-          index = 0;
-          showingFront = true;
-          showCard();
-          alert("Let's try those saved ones!");
-          return;
+        if (isReviewingTricky) {
+          alert("Review session complete! Returning to your lesson...");
+          resumeMainSession();
+        } else {
+          alert("Unit complete! Da iawn!");
+          goHome();
         }
-        goHome();
         return;
       }
       showingFront = true;
@@ -515,19 +253,50 @@
 
     function repeatWord() {
       const currentWord = words[index];
-      if (!repeatQueue.includes(currentWord)) {
-        repeatQueue.push(currentWord);
-        document.getElementById("review-now-btn").classList.remove("hidden");
+      // Prevent duplicates in the tricky list
+      if (!trickyWords.some(w => w.front === currentWord.front)) {
+        trickyWords.push(currentWord);
       }
+      document.getElementById("review-now-btn").classList.remove("hidden");
+      
+      const saveBtn = document.getElementById("save-btn");
+      saveBtn.innerText = "Saved! ✨";
+      setTimeout(() => saveBtn.innerText = "Save for Later", 800);
     }
 
     function reviewSavedNow() {
-      words = [...repeatQueue].sort(() => Math.random() - 0.5);
-      repeatQueue = [];
+      if (trickyWords.length === 0) return;
+
+      // 1. Store the current session if we aren't already in a review
+      if (!isReviewingTricky) {
+        backupWords = [...words];
+        backupIndex = index;
+      }
+
+      // 2. Load tricky words
+      words = [...trickyWords].sort(() => Math.random() - 0.5);
       index = 0;
+      isReviewingTricky = true;
       showingFront = true;
+
+      // 3. UI Changes
       document.getElementById("review-now-btn").classList.add("hidden");
       document.getElementById("unit-title").innerText = "REVIEWING SAVED";
+      document.getElementById("flashcard-element").classList.add("review-mode");
+      showCard();
+    }
+
+    function resumeMainSession() {
+      words = [...backupWords];
+      index = backupIndex;
+      isReviewingTricky = false;
+      showingFront = true;
+
+      document.getElementById("unit-title").innerText = mainUnitTitle;
+      document.getElementById("flashcard-element").classList.remove("review-mode");
+      if (trickyWords.length > 0) {
+        document.getElementById("review-now-btn").classList.remove("hidden");
+      }
       showCard();
     }
 
@@ -550,27 +319,29 @@
     }
 
     function toggleDirection() {
-      if (direction === "welsh-to-english") {
-        direction = "english-to-welsh";
-        document.getElementById("directionBtn").innerText = "English → Welsh";
-      } else {
-        direction = "welsh-to-english";
-        document.getElementById("directionBtn").innerText = "Welsh → English";
-      }
+      direction = (direction === "welsh-to-english") ? "english-to-welsh" : "welsh-to-english";
+      document.getElementById("directionBtn").innerText = direction === "welsh-to-english" ? "Welsh → English" : "English → Welsh";
     }
 
     function startTest() {
+      trickyWords = []; // Reset tricky words for a fresh test
+      document.getElementById("review-now-btn").classList.add("hidden");
+
       const selected = [...document.querySelectorAll("#test-units input:checked")].map(cb => cb.value);
       if (selected.length === 0) return alert("Select a unit!");
-      isTestMode = true;
+      
       let pool = [];
       selected.forEach(unit => { pool = pool.concat(UNITS[unit]); });
       words = pool.sort(() => Math.random() - 0.5).slice(0, 30);
       index = 0;
       showingFront = true;
+      isReviewingTricky = false;
+      mainUnitTitle = "QUIZ MODE";
+      
       document.getElementById("home").classList.add("hidden");
       document.getElementById("flashcards").classList.remove("hidden");
-      document.getElementById("unit-title").innerText = "QUIZ MODE";
+      document.getElementById("unit-title").innerText = mainUnitTitle;
+      document.getElementById("flashcard-element").classList.remove("review-mode");
       showCard();
     }
 
@@ -585,6 +356,5 @@
 
     buildTestUnitOptions();
   </script>
-
 </body>
 </html>
