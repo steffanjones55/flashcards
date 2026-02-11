@@ -644,23 +644,20 @@ function nextCard() {
 
 function repeatWord() {
   const currentWord = words[index];
-  // Add to queue only if it's not already in there
   if (!repeatQueue.includes(currentWord)) {
     repeatQueue.push(currentWord);
-    // Show the button as soon as there is at least 1 word saved
     document.getElementById("review-now-btn").classList.remove("hidden");
   }
-}
-  function reviewSavedNow() {
+} // <--- This brace was missing!
+
+function reviewSavedNow() {
   if (repeatQueue.length === 0) return;
 
-  // Set the words to just the ones she saved
   words = [...repeatQueue].sort(() => Math.random() - 0.5);
-  repeatQueue = []; // Clear the queue for the new mini-round
+  repeatQueue = []; 
   index = 0;
   showingFront = true;
   
-  // Hide the review button until she saves new words in this round
   document.getElementById("review-now-btn").classList.add("hidden");
   document.getElementById("unit-title").innerText = "Reviewing Tricky Words";
   
@@ -767,6 +764,7 @@ buildTestUnitOptions();
 
 </body>
 </html>
+
 
 
 
