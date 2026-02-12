@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welsh Flashcards - Mastery Edition</title>
+  <title>Welsh Flashcards - Full Edition</title>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     body {
@@ -15,19 +15,18 @@
       margin: 0; padding: 20px; text-align: center;
     }
     h1 { font-family: 'Georgia', serif; font-style: italic; font-size: 3rem; color: #f472b6; text-shadow: 2px 2px 10px rgba(244, 114, 182, 0.4); }
-    #home, #flashcards { max-width: 800px; margin: 0 auto; background: #1e293b; padding: 40px; border-radius: 30px; border: 2px solid #334155; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+    #home, #flashcards, #glossary { max-width: 800px; margin: 0 auto; background: #1e293b; padding: 40px; border-radius: 30px; border: 2px solid #334155; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
     .unit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; margin-top: 20px; }
-    .card { width: 90%; max-width: 400px; height: 250px; margin: 30px auto; background: #ffffff; color: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; border-radius: 20px; box-shadow: 0 10px 0px #f472b6; cursor: pointer; padding: 25px; user-select: none; transition: transform 0.1s; }
-    .card:active { transform: scale(0.98); }
+    .card { width: 90%; max-width: 400px; height: 250px; margin: 30px auto; background: #ffffff; color: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; border-radius: 20px; box-shadow: 0 10px 0px #f472b6; cursor: pointer; padding: 25px; user-select: none; }
     .card.review-mode { box-shadow: 0 10px 0px #38bdf8; border: 2px solid #38bdf8; }
     button { background-color: #334155; color: #fdf2f8; border: 1px solid #475569; border-radius: 12px; padding: 12px 18px; font-weight: 600; cursor: pointer; transition: 0.2s; }
     button:hover { background-color: #f472b6; color: white; transform: scale(1.05); }
+    #test-units { text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    #test-units label { background: #334155; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; }
     #cleanup-view { text-align: left; background: #0f172a; padding: 20px; border-radius: 20px; margin-top: 20px; }
     .cleanup-item { display: flex; align-items: center; gap: 10px; padding: 12px; border-bottom: 1px solid #334155; }
-    .cleanup-item:last-child { border-bottom: none; }
     .hidden { display: none !important; }
-    label { cursor: pointer; display: block; width: 100%; font-size: 1.1rem; }
-    input[type="checkbox"] { transform: scale(1.5); margin-right: 10px; }
+    hr { border: 0; border-top: 1px solid #334155; margin: 30px 0; }
   </style>
 </head>
 <body>
@@ -37,6 +36,12 @@
   <div id="home">
     <button onclick="toggleDirection()" id="directionBtn" style="width:100%; max-width:350px; background:linear-gradient(135deg, #db2777, #f472b6); border:none; border-radius:50px; padding:15px; font-size:1.1rem; margin-bottom:20px;">Welsh → English</button>
     <div class="unit-grid" id="unit-buttons"></div>
+    <hr>
+    <h3 style="color:#94a3b8">Quiz Mode</h3>
+    <div id="test-units"></div>
+    <button onclick="startTest()" style="width: 100%; background: #ec4899; color: white; padding: 15px;">Start Random Quiz (30 Cards)</button>
+    <hr>
+    <button onclick="showGlossary()" style="background: transparent; border: none; color: #94a3b8; text-decoration: underline;">View All Words</button>
   </div>
 
   <div id="flashcards" class="hidden">
@@ -56,23 +61,29 @@
 
     <div id="cleanup-view" class="hidden">
         <h3 style="color:#38bdf8;">Review Complete!</h3>
-        <p>Uncheck the words you have mastered to remove them from your review list:</p>
+        <p>Keep these in the review list for later?</p>
         <div id="cleanup-list"></div>
-        <button onclick="confirmCleanup()" style="background: #10b981; color: white; width: 100%; padding: 15px; margin-top:20px; font-size: 1.1rem;">Confirm & Continue</button>
+        <button onclick="confirmCleanup()" style="background: #10b981; color: white; width: 100%; padding: 15px; margin-top:20px;">Confirm & Continue</button>
     </div>
 
     <br><br>
     <button onclick="location.reload()" style="background: transparent; border: none; color: #94a3b8; text-decoration: underline;">Back to Home</button>
   </div>
 
+  <div id="glossary" class="hidden">
+    <h2>Full Library</h2>
+    <div id="glossary-content" style="text-align:left; max-height: 400px; overflow-y: auto; background: #0f172a; padding: 20px; border-radius: 20px;"></div>
+    <br>
+    <button onclick="location.reload()" style="background: #f472b6; color: white;">Back</button>
+  </div>
+
 <script>
-    // FULL DATA RESTORED
     const UNITS = {
       unitA_days: [{front:"dydd Sul",back:"Sunday"},{front:"dydd Llun",back:"Monday"},{front:"dydd Mawrth",back:"Tuesday"},{front:"dydd Mercher",back:"Wednesday"},{front:"dydd Iau",back:"Thursday"},{front:"dydd Gwener",back:"Friday"},{front:"dydd Sadwrn",back:"Saturday"}],
       unitB_months: [{front:"mis Ionawr",back:"January"},{front:"mis Chwefror",back:"February"},{front:"mis Mawrth",back:"March"},{front:"mis Ebrill",back:"April"},{front:"mis Mai",back:"May"},{front:"mis Mehefin",back:"June"},{front:"mis Gorffennaf",back:"July"},{front:"mis Awst",back:"August"},{front:"mis Medi",back:"September"},{front:"mis Hydref",back:"October"},{front:"mis Tachwedd",back:"November"},{front:"mis Rhagfyr",back:"December"}],
       unitC_colours: [{front:"brown",back:"brown"},{front:"coch",back:"red"},{front:"du",back:"black"},{front:"glas",back:"blue"},{front:"gwyn",back:"white"},{front:"gwyrdd",back:"green"},{front:"llwyd",back:"grey"},{front:"melyn",back:"yellow"},{front:"oren",back:"orange"},{front:"pinc",back:"pink"},{front:"porffor / piws",back:"purple"}],
       unit1: [{front:"nos",back:"night"},{front:"noswaith",back:"evening"},{front:"paned",back:"cuppa"},{front:"bore(au)",back:"morning(s)"},{front:"car (ceir)",back:"car(s)"},{front:"croeso",back:"welcome"},{front:"dosbarth(iadau)",back:"class(es)"},{front:"byw",back:"to live"},{front:"darllen",back:"to read"},{front:"dysgu",back:"to learn; to teach"},{front:"da",back:"good"},{front:"ofnadwy",back:"terrible"},{front:"a",back:"and"},{front:"chi",back:"you"},{front:"diolch",back:"thanks"},{front:"dyna pam",back:"that’s why"},{front:"efo",back:"with"},{front:"eto",back:"again"},{front:"fi",back:"me"},{front:"heddiw",back:"today"},{front:"hwyl!",back:"bye!"},{front:"i",back:"to; for"},{front:"problem(au)",back:"problem(s)"},{front:"rhaglen(ni)",back:"programme(s)"},{front:"uned(au)",back:"unit(s)"},{front:"enw(au)",back:"name(s)"},{front:"heddlu",back:"police"},{front:"p’nawn(iau)",back:"afternoon(s)"},{front:"rhif(au)",back:"number(s)"},{front:"gwylio",back:"to watch"},{front:"gyrru",back:"to drive"},{front:"stopio",back:"to stop"},{front:"pinc",back:"pink"},{front:"wedi blino",back:"tired"},{front:"iawn",back:"ok; very"},{front:"lle?",back:"where?"},{front:"ond",back:"but"},{front:"pawb",back:"everybody"},{front:"pwy?",back:"who?"},{front:"rŵan",back:"now"},{front:"sut?",back:"how?"},{front:"ti",back:"you"},{front:"yma",back:"here"},{front:"yn",back:"in"}],
-      unit2: [{front:"cacen(nau)",back:"cake(s)"},{front:"pêl (peli)",back:"ball(s)"},{front:"bwyd",back:"food"},{front:"caws",back:"cheese"},{front:"cerdyn (cardiau)",back:"card(s)"},{front:"cig(oedd)",back:"meat(s)"},{front:"coffi(s)",back:"coffee(s)"},{front:"criced",back:"cricet"},{front:"cyrri(s)",back:"curry (-ies)"},{front:"dillad",back:"clothes"},{front:"dydd(iau)",back:"day(s)"},{front:"golff",back:"golf"},{front:"gwin",back:"wine"},{front:"hoci",back:"hockey"},{front:"bod",back:"to be"},{front:"bwyta",back:"to eat"},{front:"canu",back:"to sing"},{front:"chwarae",back:"to play"},{front:"dawnsio",back:"to dance"},{front:"gweithio",back:"to work"},{front:"gweld",back:"to see"},{front:"gwneud",back:"to do; to make"},{front:"bendigedig",back:"fantastic"},{front:"coch",back:"red"},{front:"gwyn",back:"white"},{front:"ar",back:"on"},{front:"be?/beth?",back:"what?"},{front:"chwaith",back:"either"},{front:"dim",back:"not; nothing; zero"},{front:"hefyd",back:"also"},{front:"heno",back:"tonight"},{front:"wythnos(au)",back:"week(s)"},{front:"llefrith / llaeth",back:"milk"},{front:"papur(au)",back:"paper(s)"},{front:"papur newydd",back:"newspaper"},{front:"pêl-droed",back:"football"},{front:"radio",back:"radio"},{front:"siocled(i)",back:"chocolate(s)"},{front:"siwgr",back:"sugar"},{front:"teledu",back:"television"},{front:"tennis",back:"tennis"},{front:"tiwtor(iaid)",back:"tutor(s)"},{front:"tost",back:"toast"},{front:"hoffi",back:"to like"},{front:"licio",back:"to like"},{front:"mynd",back:"to go"},{front:"prynu",back:"to buy"},{front:"sgio",back:"to ski"},{front:"siopa",back:"to shop"},{front:"smwddio",back:"to iron"},{front:"yfed",back:"to drink"},{front:"neis",back:"nice"},{front:"newydd",back:"new"},{front:"siŵr",back:"sure"},{front:"mynd am dro",back:"to go for a walk"},{front:"pryd?",back:"when?"},{front:"wrth gwrs",back:"of course"},{front:"ych a fi",back:"yuck"},{front:"yfory",back:"tomorrow"}],
+      unit2: [{front:"cacen(nau)",back:"cake(s)"},{front:"pêl (peli)",back:"ball(s)"},{front:"bwyd",back:"food"},{front:"caws",back:"cheese"},{front:"cerdyn (cardiau)",back:"card(s)"},{front:"cig(oedd)",back:"meat(s)"},{front:"coffi(s)",back:"coffee(s)"},{front:"criced",back:"criced"},{front:"cyrri(s)",back:"curry (-ies)"},{front:"dillad",back:"clothes"},{front:"dydd(iau)",back:"day(s)"},{front:"golff",back:"golf"},{front:"gwin",back:"wine"},{front:"hoci",back:"hockey"},{front:"bod",back:"to be"},{front:"bwyta",back:"to eat"},{front:"canu",back:"to sing"},{front:"chwarae",back:"to play"},{front:"dawnsio",back:"to dance"},{front:"gweithio",back:"to work"},{front:"gweld",back:"to see"},{front:"gwneud",back:"to do; to make"},{front:"bendigedig",back:"fantastic"},{front:"coch",back:"red"},{front:"gwyn",back:"white"},{front:"ar",back:"on"},{front:"be?/beth?",back:"what?"},{front:"chwaith",back:"either"},{front:"dim",back:"not; nothing; zero"},{front:"hefyd",back:"also"},{front:"heno",back:"tonight"},{front:"wythnos(au)",back:"week(s)"},{front:"llefrith / llaeth",back:"milk"},{front:"papur(au)",back:"paper(s)"},{front:"papur newydd",back:"newspaper"},{front:"pêl-droed",back:"football"},{front:"radio",back:"radio"},{front:"siocled(i)",back:"chocolate(s)"},{front:"siwgr",back:"sugar"},{front:"teledu",back:"television"},{front:"tennis",back:"tennis"},{front:"tiwtor(iaid)",back:"tutor(s)"},{front:"tost",back:"toast"},{front:"hoffi",back:"to like"},{front:"licio",back:"to like"},{front:"mynd",back:"to go"},{front:"prynu",back:"to buy"},{front:"sgio",back:"to ski"},{front:"siopa",back:"to shop"},{front:"smwddio",back:"to iron"},{front:"yfed",back:"to drink"},{front:"neis",back:"nice"},{front:"newydd",back:"new"},{front:"siŵr",back:"sure"},{front:"mynd am dro",back:"to go for a walk"},{front:"pryd?",back:"when?"},{front:"wrth gwrs",back:"of course"},{front:"ych a fi",back:"yuck"},{front:"yfory",back:"tomorrow"}],
       unit3: [{front:"diod(ydd)",back:"drink(s)"},{front:"punt (punnoedd)",back:"pound(s) (money)"},{front:"iâ",back:"ice"},{front:"swydd(i)",back:"job(s)"},{front:"potel(i)",back:"bottle(s)"},{front:"blodyn (blodau)",back:"flower(s)"},{front:"hufen iâ",back:"ice cream"},{front:"caffi(s)",back:"café(s)"},{front:"pupur",back:"pepper"},{front:"dŵr",back:"water"},{front:"pysgodyn (pysgod)",back:"fish(es)"},{front:"finegr",back:"vinegar"},{front:"rhywbeth",back:"something"},{front:"ffôn (ffonau)",back:"phone(s)"},{front:"sglodion",back:"chips"},{front:"gwaith",back:"work"},{front:"te",back:"tea"},{front:"halen",back:"salt"},{front:"tŷ (tai)",back:"house(s)"},{front:"cael",back:"to have"},{front:"isio / eisiau",back:"to want"},{front:"clywed",back:"to hear"},{front:"nofio",back:"to swim"},{front:"dallt / deall",back:"to understand"},{front:"arall",back:"other; else"},{front:"os gwelwch chi’n dda",back:"please"},{front:"dyma",back:"here is; this is"},{front:"rhywbeth arall",back:"something else"}],
       unit4: [{front:"Cymru",back:"Wales"},{front:"dynes",back:"woman"},{front:"gêm (gemau)",back:"game(s); match(es)"},{front:"gwlad (gwledydd)",back:"country; countries"},{front:"gwyliau",back:"holiday(s)"},{front:"Lloegr",back:"England"},{front:"siop(au)",back:"shop(s)"},{front:"tref(i)",back:"town(s)"},{front:"tudalen(nau)",back:"page(s)"},{front:"theatr(au)",back:"theatre(s)"},{front:"beic(iau)",back:"bike(s)"},{front:"byd",back:"world"},{front:"dyn(ion)",back:"man; men"},{front:"gwely(au)",back:"bed(s)"},{front:"Nadolig",back:"Christmas"},{front:"penwythnos(au)",back:"weekend(s)"},{front:"sinema (sinemâu)",back:"cinema(s)"},{front:"tîm (timau)",back:"team(s)"},{front:"aros",back:"to stay; to wait"},{front:"cerdded",back:"to walk"},{front:"cofio",back:"to remember"},{front:"deud",back:"to say; to tell"},{front:"dŵad",back:"to come"},{front:"hedfan",back:"to fly"},{front:"helpu",back:"to help"},{front:"nabod",back:"to know; to recognise"},{front:"newid",back:"to change"},{front:"aml",back:"often"},{front:"bach",back:"small"},{front:"gwreiddiol",back:"original"},{front:"a deud y gwir",back:"to tell the truth"},{front:"adre",back:"home"},{front:"dros",back:"over"},{front:"dyna",back:"there is"},{front:"gan",back:"by; from (a person)"},{front:"pan",back:"when"},{front:"pob",back:"every"},{front:"pob lwc",back:"good luck"},{front:"’ta",back:"or; then"},{front:"weithiau",back:"sometimes"},{front:"wir",back:"indeed"},{front:"yno",back:"there"}],
       unit5: [{front:"eglwys(i)",back:"church(es)"},{front:"lolfa",back:"lounge"},{front:"llyfrgell(oedd)",back:"library"},{front:"swyddfa bost",back:"post office"},{front:"tafarn(au)",back:"pub(s)"},{front:"ysgol(ion)",back:"school(s)"},{front:"diwetha",back:"last; previous"},{front:"amser",back:"time"},{front:"banc(iau)",back:"bank(s)"},{front:"brecwast(au)",back:"breakfast(s)"},{front:"cartref(i)",back:"home(s)"},{front:"clwb (clybiau)",back:"club(s)"},{front:"llestr(i)",back:"dish(es)"},{front:"llyfr(au)",back:"book(s)"},{front:"parc(iau)",back:"park(s)"},{front:"rygbi",back:"rugby"},{front:"stamp(iau)",back:"stamp(s)"},{front:"swper",back:"supper"},{front:"ysbyty (ysbytai)",back:"hospital(s)"},{front:"coginio",back:"to cook"},{front:"edrych ar",back:"to look at"},{front:"garddio",back:"to garden"},{front:"golchi",back:"to wash"},{front:"ymlacio",back:"to relax"},{front:"ymolchi",back:"to wash (oneself)"},{front:"ddoe",back:"yesterday"},{front:"gyda’r nos",back:"in the evening"},{front:"neithiwr",back:"last night"},{front:"wedyn",back:"afterwards"}],
@@ -94,9 +105,12 @@
     let backupIndex = 0;
     let isReviewingTricky = false;
 
-    // UI: BUILD BUTTONS
+    // 1. Build Unit Buttons & Quiz Checkboxes
     const grid = document.getElementById('unit-buttons');
+    const quizDiv = document.getElementById('test-units');
+
     Object.keys(UNITS).forEach(key => {
+        // Main buttons
         let btn = document.createElement('button');
         btn.innerText = key.replace('unit', 'Unit ').replace('_', ' ').replace('connectors', 'Connectors');
         if(key.includes('connectors')) {
@@ -107,6 +121,9 @@
         }
         btn.onclick = () => startUnit(key);
         grid.appendChild(btn);
+
+        // Quiz checkboxes
+        quizDiv.innerHTML += `<label><input type="checkbox" value="${key}"> ${key.replace('unit', 'Unit ').replace('_', ' ')}</label>`;
     });
 
     function startUnit(unitKey) {
@@ -121,20 +138,34 @@
         showCard();
     }
 
+    function startTest() {
+        const selected = [...document.querySelectorAll("#test-units input:checked")].map(cb => cb.value);
+        if (selected.length === 0) return alert("Please select at least one unit!");
+        
+        trickyWords = [];
+        let pool = [];
+        selected.forEach(unit => { pool = pool.concat(UNITS[unit]); });
+        words = pool.sort(() => Math.random() - 0.5).slice(0, 30);
+        
+        index = 0;
+        isReviewingTricky = false;
+        document.getElementById("unit-title").innerText = "QUIZ MODE";
+        document.getElementById("home").classList.add("hidden");
+        document.getElementById("flashcards").classList.remove("hidden");
+        showCard();
+    }
+
     function showCard() {
         document.getElementById("card-area").classList.remove("hidden");
         document.getElementById("cleanup-view").classList.add("hidden");
-        
         const card = words[index];
-        const textDisplay = document.getElementById("card-text");
         const el = document.getElementById("flashcard-element");
-        
         el.classList.toggle("review-mode", isReviewingTricky);
         
         if (direction === "welsh-to-english") {
-            textDisplay.innerText = showingFront ? card.front : card.back;
+            document.getElementById("card-text").innerText = showingFront ? card.front : card.back;
         } else {
-            textDisplay.innerText = showingFront ? card.back : card.front;
+            document.getElementById("card-text").innerText = showingFront ? card.back : card.front;
         }
         document.getElementById("progress-text").innerText = `CARD ${index + 1} OF ${words.length}`;
     }
@@ -147,7 +178,7 @@
             if (isReviewingTricky) {
                 showCleanupScreen();
             } else if (trickyWords.length > 0) {
-                alert("Main unit finished! Let's review the ones you saved...");
+                alert("Main unit done! Let's practice those saved words...");
                 reviewSavedNow();
             } else {
                 finishEverything();
@@ -187,27 +218,22 @@
         document.getElementById("cleanup-view").classList.remove("hidden");
         const list = document.getElementById("cleanup-list");
         list.innerHTML = "";
-        
         trickyWords.forEach((word, i) => {
             list.innerHTML += `
                 <div class="cleanup-item">
                     <input type="checkbox" checked id="check-${i}" data-idx="${i}">
                     <label for="check-${i}"><strong>${word.front}</strong> - ${word.back}</label>
-                </div>
-            `;
+                </div>`;
         });
     }
 
     function confirmCleanup() {
         const checks = document.querySelectorAll('#cleanup-list input');
         let newTricky = [];
-        checks.forEach(c => {
-            if (c.checked) newTricky.push(trickyWords[c.dataset.idx]);
-        });
+        checks.forEach(c => { if (c.checked) newTricky.push(trickyWords[c.dataset.idx]); });
         trickyWords = newTricky;
 
         if (backupWords.length > 0 && backupIndex < backupWords.length) {
-            // Case: We were in middle of unit, now return
             words = [...backupWords];
             index = backupIndex;
             backupWords = [];
@@ -216,9 +242,8 @@
             if (trickyWords.length > 0) document.getElementById("review-now-btn").classList.remove("hidden");
             showCard();
         } else {
-            // Case: Unit was finished, check if any tricky ones remain
             if (trickyWords.length > 0) {
-                alert("Let's try those remaining saved words again!");
+                alert("Let's try the remaining words again!");
                 reviewSavedNow();
             } else {
                 finishEverything();
@@ -228,15 +253,22 @@
 
     function finishEverything() {
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#f472b6', '#38bdf8', '#ffffff'] });
-        setTimeout(() => {
-            alert("Unit Complete! Da iawn!");
-            location.reload();
-        }, 1000);
+        setTimeout(() => { alert("Unit Complete! Da iawn!"); location.reload(); }, 1000);
     }
 
     function toggleDirection() {
         direction = (direction === "welsh-to-english") ? "english-to-welsh" : "welsh-to-english";
         document.getElementById("directionBtn").innerText = direction === "welsh-to-english" ? "Welsh → English" : "English → Welsh";
+    }
+
+    function showGlossary() {
+        document.getElementById("home").classList.add("hidden");
+        document.getElementById("glossary").classList.remove("hidden");
+        const content = document.getElementById("glossary-content");
+        content.innerHTML = "";
+        Object.values(UNITS).flat().forEach(card => {
+            content.innerHTML += `<p style="margin-bottom:8px; border-bottom: 1px solid #334155; padding-bottom: 5px;"><span style="color:#f472b6; font-weight:bold;">${card.front}</span> <span style="color:#94a3b8;">—</span> ${card.back}</p>`;
+        });
     }
 </script>
 </body>
